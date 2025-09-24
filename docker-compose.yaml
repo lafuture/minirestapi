@@ -1,0 +1,14 @@
+version: '3.9'
+services:
+  db:
+    restart: always
+    image: postgres:16.10-alpine
+    container_name: my_postgres
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: config.Name
+      POSTGRES_PASSWORD: config.Pass
+      POSTGRES_DB: config.DbName
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data
