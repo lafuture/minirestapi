@@ -3,49 +3,10 @@ package database
 import (
 	"context"
 	"fmt"
-	"log"
 	"myapp/internal/models"
-
-	"github.com/jackc/pgx/v5"
 )
 
-type Postgres struct {
-	db *pgx.Conn
-}
-
-func New(Url string) (*Postgres, error) {
-	db, err := pgx.Connect(context.Background(), Url)
-	if err != nil {
-		log.Fatal("Не удалось подключиться к базе:", err)
-	}
-
-	_, err = db.Exec(context.Background(), `
-        CREATE TABLE IF NOT EXISTS users (
-            id SERIAL PRIMARY KEY,
-            name VARCHAR(50) NOT NULL,
-            password VARCHAR(100) NOT NULL,
-            mail VARCHAR(100) NOT NULL
-        )
-    `)
-	if err != nil {
-		log.Fatal("Не удалось создать таблицу users:", err)
-	}
-
-	_, err = db.Exec(context.Background(), `
-        CREATE TABLE IF NOT EXISTS pages (
-            id SERIAL PRIMARY KEY,
-            name VARCHAR(50) NOT NULL,
-            text VARCHAR(10000) NOT NULL
-        )
-    `)
-	if err != nil {
-		log.Fatal("Не удалось создать таблицу pages:", err)
-	}
-
-	return &Postgres{db}, nil
-}
-
-func (p *Postgres) RegisterUser(m models.RegisterRequest) error {
+func (p *Postgres) RegisterUser(m models.User) error {
 	_, err := p.db.Exec(context.Background(),
 		"INSERT INTO users (name, password, mail) VALUES ($1, $2, $3)",
 		m.Name, m.Password, m.Mail)

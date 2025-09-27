@@ -7,8 +7,8 @@ services:
     ports:
       - "5433:5432"
     environment:
-      POSTGRES_USER: config.Name
-      POSTGRES_PASSWORD: config.Pass
-      POSTGRES_DB: config.DbName
-    volumes:
-      - ./pgdata:/var/lib/postgresql/data
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: qwerty
+      POSTGRES_DB: mydb
+volumes:
+  postgres-data:

@@ -27,12 +27,16 @@ func main() {
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 
-	r.Post("/signup", handler.RegisterHandler(db))
-	r.Post("/login", handler.LoginHandler(db))
-	r.Get("/page/{id}", handler.GetPageHandler(db))
-	r.Get("/pages", handler.GetPagesHandler(db))
-	r.Post("/page", handler.MakePageHandler(db))
-	r.Put("/page/{id}", handler.EditPageHandler(db))
+	h := handler.NewHandler(db)
+
+	r.Post("/signup", h.Register)
+	r.Post("/login", h.Login)
+	r.Get("/page/{id}", h.GetPage)
+	r.Get("/pages", h.GetPages)
+	r.Post("/page", h.MakePage)
+	r.Put("/page/{id}", h.EditPage)
+	r.Get("/signup/check", h.CheckRegisterPage)
+	r.Post("/signup/check", h.CheckRegister)
 
 	http.ListenAndServe(":3333", r)
 }
