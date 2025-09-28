@@ -1,18 +1,16 @@
 package handler
 
 import (
+	"context"
 	"encoding/json"
-	"fmt"
-	"math/rand"
 	"myapp/internal/models"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/gorilla/sessions"
+	"github.com/segmentio/kafka-go"
 )
-
-var store = sessions.NewCookieStore([]byte("super-secret-key"))
 
 func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 	var req models.RegisterRequest
@@ -26,17 +24,32 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	random := rand.Intn(9000) + 1000
-	fmt.Println(random)
+	u := models.User{
+		Name:     req.Name,
+		Password: req.Password,
+		Mail:     req.Mail,
+	}
 
-	session, _ := store.Get(r, "signup-session")
-	session.Values["mail"] = req.Mail
-	session.Values["name"] = req.Name
-	session.Values["password"] = req.Password
-	session.Values["code"] = random
-	session.Save(r, w)
+	err := h.db.RegisterUser(u)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 
-	http.Redirect(w, r, "/signup/check", http.StatusSeeOther)
+	data, err := json.Marshal(u)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if err := h.kafka.WriteMessages(r.Context(),
+		kafka.Message{Value: data},
+	); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	}
+
+	w.WriteHeader(http.StatusCreated)
+	w.Write([]byte("Пользователь успешно создан"))
 }
 
 func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
@@ -133,36 +146,38 @@ func (h *Handler) EditPage(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Страница успешно отредактирована"))
 }
 
-func (h *Handler) CheckRegisterPage(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Введите код который пришел на почту"))
-}
-
-func (h *Handler) CheckRegister(w http.ResponseWriter, r *http.Request) {
-	var req models.CheckRegisterRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+func (h *Handler) GetLastPages(w http.ResponseWriter, r *http.Request) {
+	cache, err := h.rd.Get(context.Background(), "last_pages").Result()
+	if err == nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(cache))
 		return
 	}
 
-	session, _ := store.Get(r, "signup-session")
-
-	if int(req.Code) != session.Values["code"].(int) {
-		http.Error(w, "Неправильно введен код", http.StatusBadRequest)
-		return
-	}
-
-	u := models.User{
-		Name:     session.Values["name"].(string),
-		Password: session.Values["password"].(string),
-		Mail:     session.Values["mail"].(string),
-	}
-
-	err := h.db.RegisterUser(u)
+	p, err := h.db.GetPages()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	w.WriteHeader(http.StatusCreated)
-	w.Write([]byte("Пользователь успешно создан"))
+	var lp []models.Page
+	if len(p) > 10 {
+		lp = p[len(p)-10:]
+	} else {
+		lp = p
+	}
+
+	data, err := json.Marshal(lp)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if err := h.rd.Set(context.Background(), "last_pages", data, 600*time.Second).Err(); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(data)
 }
