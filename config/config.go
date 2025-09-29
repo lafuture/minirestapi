@@ -8,10 +8,13 @@ import (
 )
 
 var (
-	Name   string
-	Pass   string
-	DbName string
-	DbUrl  string
+	Name       string
+	Pass       string
+	DbName     string
+	DbUrl      string
+	Redis      string
+	Kafka      string
+	KafkaTopic string
 )
 
 func init() {
@@ -24,4 +27,7 @@ func init() {
 	Pass = os.Getenv("PASS")
 	DbName = os.Getenv("DBNAME")
 	DbUrl = os.Getenv("DBURL")
+	Redis = os.Getenv("REDIS")
+	Kafka = os.Getenv("KAFKA")
+	KafkaTopic = os.Getenv("KAFKATOPIC")
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"log"
+	"myapp/config"
 	"myapp/internal/models"
 
 	"github.com/segmentio/kafka-go"
@@ -11,8 +12,8 @@ import (
 
 func main() {
 	reader := kafka.NewReader(kafka.ReaderConfig{
-		Brokers: []string{"localhost:9092"},
-		Topic:   "my-topic",
+		Brokers: []string{config.Kafka},
+		Topic:   config.KafkaTopic,
 	})
 	defer reader.Close()
 

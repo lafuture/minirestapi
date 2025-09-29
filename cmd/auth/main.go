@@ -17,13 +17,13 @@ import (
 
 func main() {
 	writer := kafka.NewWriter(kafka.WriterConfig{
-		Brokers: []string{"localhost:9092"},
-		Topic:   "users",
+		Brokers: []string{config.Kafka},
+		Topic:   config.KafkaTopic,
 	})
 	defer writer.Close()
 
 	rd := redis.NewClient(&redis.Options{
-		Addr: "localhost:6379",
+		Addr: config.Redis,
 	})
 	if err := rd.Ping(context.Background()).Err(); err != nil {
 		log.Fatal("Failed to connect to redis", err)

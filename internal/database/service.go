@@ -2,9 +2,12 @@ package database
 
 import (
 	"context"
-	"github.com/golang-migrate/migrate/v4"
-	"github.com/jackc/pgx/v5"
 	"log"
+
+	"github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
+	"github.com/jackc/pgx/v5"
 )
 
 type Postgres struct {
@@ -18,7 +21,7 @@ func New(Url string) (*Postgres, error) {
 	}
 
 	m, err := migrate.New(
-		"file://./migrations",
+		"file:///Users/zakharbakhmutov/GolandProjects/awesomeProject/myapp/internal/database/migrations"+"?sslmode=disable",
 		Url,
 	)
 	if err != nil {
@@ -27,6 +30,8 @@ func New(Url string) (*Postgres, error) {
 
 	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
 		log.Fatal("Не удалось применить миграции:", err)
+	} else {
+		log.Println("Миграции применены или изменений не было")
 	}
 
 	log.Println("Миграции успешно применены")
