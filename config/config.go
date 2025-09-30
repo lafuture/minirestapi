@@ -15,6 +15,7 @@ var (
 	Redis      string
 	Kafka      string
 	KafkaTopic string
+	Migra      string
 )
 
 func init() {
@@ -30,4 +31,5 @@ func init() {
 	Redis = os.Getenv("REDIS")
 	Kafka = os.Getenv("KAFKA")
 	KafkaTopic = os.Getenv("KAFKATOPIC")
+	Migra = os.Getenv("MIGRATIONSURL")
 }

@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"log"
+	"myapp/config"
 
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
@@ -21,7 +22,7 @@ func New(Url string) (*Postgres, error) {
 	}
 
 	m, err := migrate.New(
-		"file:///Users/zakharbakhmutov/GolandProjects/awesomeProject/myapp/internal/database/migrations",
+		config.Migra,
 		Url,
 	)
 	if err != nil {
