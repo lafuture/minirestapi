@@ -64,7 +64,7 @@ func (p *Postgres) GetPage(id int) (models.Page, error) {
 }
 
 func (p *Postgres) GetPages() ([]models.Page, error) {
-	rows, err := p.db.Query(context.Background(), "SELECT name, text FROM pages")
+	rows, err := p.db.Query(context.Background(), "SELECT id, name, text FROM pages")
 	if err != nil {
 		return nil, fmt.Errorf("Не удалось посмотреть все статьи: %w", err)
 	}

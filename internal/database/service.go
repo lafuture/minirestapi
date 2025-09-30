@@ -21,7 +21,7 @@ func New(Url string) (*Postgres, error) {
 	}
 
 	m, err := migrate.New(
-		"file:///Users/zakharbakhmutov/GolandProjects/awesomeProject/myapp/internal/database/migrations"+"?sslmode=disable",
+		"file:///Users/zakharbakhmutov/GolandProjects/awesomeProject/myapp/internal/database/migrations",
 		Url,
 	)
 	if err != nil {
